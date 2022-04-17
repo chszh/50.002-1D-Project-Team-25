@@ -1,0 +1,485 @@
+module game_CU (
+    input clk,
+    input rst,
+    input regfile_datain[16], //direct reading of regfile data from read_address_b
+    
+    input p1_add_button,
+    input p1_sel_button,
+    input p2_add_button,
+    input p2_sel_button,
+
+    output alufn[6],
+    output asel[2],
+    output bsel[2],
+    output wdsel[2],
+    output regfile_write_address[4],
+    output regfile_read_address_a[4],
+    output regfile_read_address_b[4],
+    output we_regfile,
+    output p1_inc,
+    output p2_inc,
+    output segreset
+  ){
+
+  .clk(clk){
+    fsm game_fsm={
+      RESET_P1_SCORE,
+      RESET_P1_TILES,
+      RESET_P2_SCORE,
+      RESET_P2_TILES,
+      IDLE,
+      CHECK_P1_SELECTED_TILE,
+      BRANCH_P1_SELECTED_TILE,
+      SHL_P1_SELECTED_TILE,
+      P1_NUM_PLUSONE,
+      SET_P1_TILEONE,
+      SET_P1_NUMONE,
+      CHECK_P2_SELECTED_TILE,
+      BRANCH_P2_SELECTED_TILE,
+      SHL_P2_SELECTED_TILE,
+      P2_NUM_PLUSONE,
+      SET_P2_TILEONE,
+      SET_P2_NUMONE,
+      P1_TILES_AND_COUNT,
+      CHECK_P1_VALID_PRESS,
+      BRANCH_P1_VALID_PRESS,
+      SET_P1_PRESSED,
+      BRANCH_P1_PRESSED,
+      P2_TILES_AND_COUNT,
+      CHECK_P2_VALID_PRESS,
+      BRANCH_P2_VALID_PRESS,
+      SET_P2_PRESSED,
+      BRANCH_P2_PRESSED,
+      CALC_COLLATE_SCORE, 
+      P1_COUNT_MINUS_P2_COUNT,
+      IS_LT_ZERO,
+      SET_P2_WINNER,
+      BRANCH_LT_ZERO,
+      REDUCE_COLLATE_SCORE,
+      COLLATE_SCORE_IS_ZERO,
+      BRANCH_COLLATE_SCORE_IS_ZERO,
+      SCORE_WINNER,
+      IS_ZERO,
+      BRANCH_IS_ZERO,
+      SET_P1_WINNER,
+      CONSUME_P1_TILE,
+      CONSUME_P2_TILE,
+      CHECK_P1_TILES_EMPTY,
+      BRANCH_P1_TILES_EMPTY,
+      GAMEOVER    
+      };
+  }
+  
+// Registers
+// 0x1 = P1 Score
+// 0x2 = P2 Score
+// 0x3 = P1 Available Tiles
+// 0x4 = P2 Available Tiles
+// 0x5 = P1 Selected Tile
+// 0x6 = P2 Selected Tile
+// 0x7 = P1 Pressed
+// 0x8 = P2 Pressed
+// 0x9 = P1 Selected Tile Numerical Value
+// 0xA = P2 Selected Tile Numerical Value
+// 0xE = TMP REG
+// 0xF = TMP REG
+
+// sel
+// asel = b01 //16b1
+// asel = b10 //16b0
+// bsel = b01 //16b1
+// bsel = b10 //16b0
+// bsel = b11 //b0000000100000000
+// wdsel = b01 //16b1
+// wdsel = b10 //16b0
+// wdsel = b11 //b0000000111111111
+  always {
+    // standard setting unless otherwise overwritten by each case 
+    alufn = 0;
+    asel = 0;
+    bsel = 0;
+    wdsel = 0;
+    regfile_write_address = 0;
+    regfile_read_address_a = 0;
+    regfile_read_address_b = 0;
+    we_regfile = 0;
+    p1_inc = 0;
+    p2_inc = 0;
+    segreset = 0;
+
+    if (rst){
+      game_fsm.d = game_fsm.RESET_P1_SCORE;
+      segreset=1;
+    }
+    else{
+    
+    case(game_fsm.q){
+    
+      game_fsm.RESET_P1_SCORE:
+        we_regfile = 1; 
+        regfile_write_address = 4h1; //P1 Score
+        wdsel=b10; //16b0
+        game_fsm.d = game_fsm.RESET_P1_TILES;
+        
+      game_fsm.RESET_P1_TILES:
+        we_regfile = 1; 
+        regfile_write_address = 4h3; //P1 Available Tiles
+        wdsel=b11; //b0000000001111111
+        game_fsm.d = game_fsm.RESET_P2_SCORE;
+      
+      game_fsm.RESET_P2_SCORE:
+        we_regfile = 1; 
+        regfile_write_address = 4h2; //P2 Score
+        wdsel=b10; //16b0
+        game_fsm.d = game_fsm.RESET_P2_TILES;
+        
+      game_fsm.RESET_P2_TILES:
+        we_regfile = 1;
+        regfile_write_address = 4h4; //P2 Available Tiles
+        wdsel=b11; //b0000000001111111
+        game_fsm.d = game_fsm.IDLE;
+
+      game_fsm.CHECK_P1_SELECTED_TILE:
+        alufn = b110011; //CMPEQ
+        asel = b00;
+        bsel = b11; //b0000000001000000
+        we_regfile = 1;
+        regfile_read_address_a = 4h5; //P1 Selected Tile
+        regfile_write_address = 4hF;
+        game_fsm.d = game_fsm.BRANCH_P1_SELECTED_TILE;
+      
+      game_fsm.BRANCH_P1_SELECTED_TILE:
+        regfile_read_address_b = 4hF; //is 1 if P1_SELECTED_TILE == 7th tile
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.SET_P1_TILEONE;
+        }
+        else{
+          game_fsm.d = game_fsm.SHL_P1_SELECTED_TILE;
+        }
+
+      game_fsm.SHL_P1_SELECTED_TILE:
+        alufn = b100000; //SHL
+        bsel = b01; //16b1
+        we_regfile = 1;
+        regfile_read_address_a = 4h5; //P1 Selected Tile
+        regfile_write_address = 4h5; //P1 Selected Tile
+        game_fsm.d = game_fsm.P1_NUM_PLUSONE;
+        
+      game_fsm.P1_NUM_PLUSONE:
+        alufn=b000000; //ADD
+        bsel=b01; //16b1
+        we_regfile=1;
+        regfile_read_address_a = 4h9; //P1 Selected Tile Numerical Value
+        regfile_write_address = 4h9; //P1 Selected Tile Numerical Value
+        game_fsm.d = game_fsm.IDLE;
+
+      game_fsm.SET_P1_TILEONE:
+        we_regfile = 1;
+        regfile_write_address = 4h5; //P1 Selected Tile
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.SET_P1_NUMONE;
+
+      game_fsm.SET_P1_NUMONE:
+        we_regfile = 1;
+        regfile_write_address = 4h9; //P1 Selected Tile Numerical Value
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.IDLE;
+
+      game_fsm.CHECK_P2_SELECTED_TILE:
+        alufn = b110011; //CMPEQ
+        bsel = b11; //b0000000001000000
+        we_regfile = 1;
+        regfile_read_address_a = 4h6; //P2 Selected Tile
+        regfile_write_address = 4hf; //b0000000001000000
+        game_fsm.d = game_fsm.BRANCH_P2_SELECTED_TILE;
+      
+      game_fsm.BRANCH_P2_SELECTED_TILE:
+        regfile_read_address_b = 4hf; //is 1 if P2_SELECTED_TILE == 7th tile
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.SET_P2_TILEONE;
+        }
+        else{
+          game_fsm.d = game_fsm.SHL_P2_SELECTED_TILE;
+        }
+
+      game_fsm.SHL_P2_SELECTED_TILE:
+        alufn = b100000; //SHL
+        bsel = b01; //16b1
+        we_regfile = 1;
+        regfile_read_address_a = 4h6; //P2 SELECTED TILE
+        regfile_write_address = 4h6;
+        game_fsm.d = game_fsm.P2_NUM_PLUSONE;
+        
+      game_fsm.P2_NUM_PLUSONE:
+        alufn=b000000; //ADD
+        bsel=b01; //16b1
+        we_regfile=1;
+        regfile_read_address_a = 4hA; //P2 Selected Tile Numerical Value
+        regfile_write_address = 4hA;
+        game_fsm.d = game_fsm.IDLE;
+
+      game_fsm.SET_P2_TILEONE:
+        we_regfile = 1;
+        regfile_write_address = 4h6; //P2 Selected Tile
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.SET_P2_NUMONE;
+
+      game_fsm.SET_P2_NUMONE:
+        we_regfile = 1;
+        regfile_write_address = 4hA; //P2 Selected Tile Numerical Value
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.IDLE;
+
+////////////////////////////////////////////////////////////////
+
+      game_fsm.P1_TILES_AND_COUNT:
+        alufn=b011000; //AND
+        we_regfile = 1;
+        regfile_read_address_a = 4h3; //P1 Available Tiles
+        regfile_read_address_b = 4h5; //P1 Selected Tile
+        regfile_write_address = 4hF;
+        game_fsm.d = game_fsm.CHECK_P1_VALID_PRESS;
+
+      game_fsm.CHECK_P1_VALID_PRESS:
+        alufn=b110011; //CMPEQ
+        regfile_read_address_a = 4hF; 
+        bsel=b10; //16b0
+        we_regfile = 1;
+        regfile_write_address = 4hF;
+        game_fsm.d = game_fsm.BRANCH_P1_VALID_PRESS;
+
+      game_fsm.BRANCH_P1_VALID_PRESS:
+        regfile_read_address_b = 4hF;
+        //is 1 if Available AND Selected == 0
+        //i.e is 1 if invalid press
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.IDLE;
+        }
+        else{
+          game_fsm.d = game_fsm.SET_P1_PRESSED;
+        }
+
+      game_fsm.SET_P1_PRESSED:
+        we_regfile = 1;
+        regfile_write_address = 4h7; //P1 Pressed
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.BRANCH_P2_PRESSED;
+
+      game_fsm.BRANCH_P2_PRESSED:
+        regfile_read_address_b = 4h8; //P2 Pressed
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.CALC_COLLATE_SCORE;
+        }
+        else{
+          game_fsm.d = game_fsm.IDLE;
+        }
+
+      game_fsm.P2_TILES_AND_COUNT:
+        alufn=b011000; //AND
+        we_regfile = 1;
+        regfile_read_address_a = 4h4; //P2 Available Tiles
+        regfile_read_address_b = 4h6; //P2 Selected Tile
+        regfile_write_address = 4hF;
+        game_fsm.d = game_fsm.BRANCH_P2_VALID_PRESS;
+
+      game_fsm.CHECK_P2_VALID_PRESS:
+        alufn=b110011; //CMPEQ
+        regfile_read_address_a = 4hF;
+        bsel=b10; //16b0
+        we_regfile = 1;
+        regfile_write_address = 4hF;
+        game_fsm.d = game_fsm.BRANCH_P2_VALID_PRESS;
+
+      game_fsm.BRANCH_P2_VALID_PRESS:
+        regfile_read_address_b = 4hF;
+        //is 1 if Available AND Selected == 0
+        //i.e is 1 if invalid press
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.IDLE;
+        }
+        else{
+          game_fsm.d = game_fsm.SET_P2_PRESSED;
+        }
+
+      game_fsm.SET_P2_PRESSED:
+        we_regfile = 1;
+        regfile_write_address = 4h8;
+        wdsel=b01; //16b1
+        game_fsm.d = game_fsm.BRANCH_P1_PRESSED;
+
+      game_fsm.BRANCH_P1_PRESSED:
+        regfile_read_address_b = 4h7; //P1 Pressed
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.CALC_COLLATE_SCORE;
+        }
+        else{
+          game_fsm.d = game_fsm.IDLE;
+        }
+
+////////////////////////////////////////////////////////////////
+
+//Registers
+//0xF = P1_COUNT_MINUS_P2_COUNT // WINNER_IS_P1
+//0xE = TEMP REG
+//0xD = COLLATE_SCORE
+
+      game_fsm.CALC_COLLATE_SCORE:
+        alufn = b000000; //ADD
+        we_regfile = 1;
+        regfile_read_address_a = 4h9;
+        regfile_read_address_b = 4hA;
+        regfile_write_address = 4hD;
+        game_fsm.d = game_fsm.P1_COUNT_MINUS_P2_COUNT;
+          
+      game_fsm.P1_COUNT_MINUS_P2_COUNT:
+        alufn = b000001; //SUB
+        we_regfile = 1; 
+        regfile_read_address_a = 4h5; //P1 Selected Tile
+        regfile_read_address_b = 4h6; //P2 Selected Tile      
+        regfile_write_address = 4hF; //P1_COUNT_MINUS_P2_COUNT
+        game_fsm.d = game_fsm.IS_LT_ZERO;
+
+      game_fsm.IS_LT_ZERO:
+        alufn = b110101; //CMPLT
+        regfile_read_address_a = 4hF; //P1_COUNT_MINUS_P2_COUNT
+        bsel = b10; //16b0
+        we_regfile = 1; 
+        regfile_write_address = 4hE; //TEMP REG
+        game_fsm.d = game_fsm.BRANCH_LT_ZERO;
+
+      game_fsm.BRANCH_LT_ZERO:
+        regfile_read_address_b = 4hE; //TEMP REG
+        //is 1 if P2Tile > P1Tile
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.SET_P2_WINNER;
+        }
+        else{
+          game_fsm.d = game_fsm.IS_ZERO;
+        }
+          
+      game_fsm.SET_P1_WINNER:
+        regfile_write_address = 4hF; //WINNER_IS_P1
+        we_regfile = 1;
+        wdsel = b01; //16b1
+        game_fsm.d = game_fsm.SCORE_WINNER;
+          
+      game_fsm.SET_P2_WINNER:
+        regfile_write_address = 4hF; //WINNER_IS_P1
+        we_regfile = 1;
+        wdsel = b10; //16b0
+        game_fsm.d = game_fsm.SCORE_WINNER;
+          
+      game_fsm.SCORE_WINNER:
+        regfile_read_address_b = 4hF; //WINNER_IS_P1
+        if (regfile_datain[0]){
+          p1_inc = 1;
+        }
+        else{
+          p2_inc = 1;
+        }
+        game_fsm.d = game_fsm.REDUCE_COLLATE_SCORE;
+          
+      game_fsm.REDUCE_COLLATE_SCORE:
+        alufn = b000001; //SUB
+        bsel = b01; //16b1
+        regfile_read_address_a = 4hD; //COLLATE SCORE
+        we_regfile = 1; 
+        regfile_write_address = 4hD; //COLLATE SCORE
+        game_fsm.d = game_fsm.COLLATE_SCORE_IS_ZERO;  
+
+      game_fsm.COLLATE_SCORE_IS_ZERO:
+        alufn = b110011; //CMPEQ
+        regfile_read_address_a = 4hD; //SCORE COLLATE
+        bsel=b10; //16b0
+        regfile_write_address = 4hE; //TMP REG
+        we_regfile = 1;
+        game_fsm.d = game_fsm.BRANCH_COLLATE_SCORE_IS_ZERO;
+       
+      game_fsm.BRANCH_COLLATE_SCORE_IS_ZERO:
+        regfile_read_address_b = 4hE; //TEMP REG: COLLATE_SCORE_IS_ZERO
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.CONSUME_P1_TILE;
+        }
+        else{
+          game_fsm.d = game_fsm.SCORE_WINNER;
+        }
+          
+      game_fsm.IS_ZERO:
+        alufn = b110011; //CMPEQ
+        bsel = b10; //16b0
+        regfile_read_address_a = 4hF; //P1_COUNT_MINUS_P2_COUNT
+        we_regfile = 1; 
+        regfile_write_address = 4hE; //TEMP REG
+        game_fsm.d = game_fsm.BRANCH_IS_ZERO;
+
+      game_fsm.BRANCH_IS_ZERO:
+        regfile_read_address_b = 4hE; //TEMP REG
+        //is 1 if P2Tile == P1Tile
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.CONSUME_P1_TILE;
+        }
+        else{
+          game_fsm.d = game_fsm.SET_P1_WINNER;
+        }
+                
+      game_fsm.CONSUME_P1_TILE:
+        alufn = b000001; //SUB
+        we_regfile = 1;
+        regfile_read_address_a = 4h3; //P1 Available Tiles
+        regfile_read_address_b = 4h5; //P1 Selected Tile
+        regfile_write_address = 4h3; //P1 Available Tiles
+        game_fsm.d = game_fsm.CONSUME_P2_TILE;
+
+      game_fsm.CONSUME_P2_TILE:
+        alufn = b000001; //SUB
+        we_regfile = 1;
+        regfile_read_address_a = 4h4; //P2 Available Tiles
+        regfile_read_address_b = 4h6; //P2 Selected Tile
+        regfile_write_address = 4h4; //P2 Available Tiles
+        game_fsm.d = game_fsm.CHECK_P1_TILES_EMPTY;
+
+////////////////////////////////////////////////////////////////
+
+      game_fsm.CHECK_P1_TILES_EMPTY:
+        alufn = b110011; //CMPEQ
+        bsel = b10; //16b0
+        regfile_read_address_a = 4h3; //P1 Available Tiles
+        we_regfile = 1; 
+        regfile_write_address = 4hF; //TEMP REG
+        game_fsm.d = game_fsm.BRANCH_P1_TILES_EMPTY;
+
+      game_fsm.BRANCH_P1_TILES_EMPTY:
+        regfile_read_address_b = 4hF; //TEMP REG
+        //is 1 if P1_AVAILABLE_TILES == 16b0
+        if (regfile_datain[0]){
+          game_fsm.d = game_fsm.GAMEOVER;
+        }
+        else{
+          game_fsm.d = game_fsm.IDLE;
+        }
+          
+      game_fsm.GAMEOVER:
+        game_fsm.d = game_fsm.GAMEOVER;
+
+////////////////////////////////////////////////////////////////
+
+      game_fsm.IDLE:
+        if (p1_add_button){
+          game_fsm.d = game_fsm.CHECK_P1_SELECTED_TILE;
+        }
+        else if (p2_add_button){
+            game_fsm.d = game_fsm.CHECK_P2_SELECTED_TILE;
+        }
+        else if (p1_sel_button && ~p2_sel_button){
+            game_fsm.d = game_fsm.P1_TILES_AND_COUNT;
+        }
+        else if (p2_sel_button && ~p1_sel_button){
+            game_fsm.d = game_fsm.P2_TILES_AND_COUNT;
+        }
+        else{
+            game_fsm.d = game_fsm.IDLE;
+        }
+      }
+    } 
+  }
+}

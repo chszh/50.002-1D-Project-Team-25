@@ -1,0 +1,96 @@
+Errors in file /home/cheze/Xilinx/alchitry-labs-1.2.7/projects/seven/seven/source/au_top.luc:
+    Line 38, Column 4 : The name "io_sel" could not be resolved
+    Line 16, Column 4 : The signal "in" was not assigned
+    Line 17, Column 4 : The signal "in" was not assigned
+    Line 21, Column 6 : The module "my_datapath" could not be found
+    Line 31, Column 4 : The name "buttoncond" could not be resolved
+    Line 32, Column 4 : The name "buttondetector" could not be resolved
+    Line 32, Column 24 : The name "buttoncond" could not be resolved
+    Line 33, Column 4 : The name "my_datapath" could not be resolved
+    Line 33, Column 26 : The name "buttondetector" could not be resolved
+    Line 35, Column 18 : The name "gameMachine" could not be resolved
+    Line 37, Column 4 : The name "io_seg" could not be resolved
+Errors in file /home/cheze/Xilinx/alchitry-labs-1.2.7/projects/seven/seven/source/multi_seven_seg.luc:
+    Line 27, Column 10 : The name "digit_dec" could not be resolved
+    Line 15, Column 3 : The input "clk" does not belong to the module "seven_seg"
+    Line 15, Column 14 : The input "rst" does not belong to the module "seven_seg"
+    Line 16, Column 4 : The module "counter" could not be found
+    Line 20, Column 2 : The module "decoder" could not be found
+    Line 23, Column 26 : The name "ctr" could not be resolved
+    Line 26, Column 4 : The name "digit_dec" could not be resolved
+    Line 26, Column 19 : The name "ctr" could not be resolved
+Errors in file /home/cheze/Xilinx/alchitry-labs-1.2.7/library/components/alchitry.acf:
+    Line 13, Column 4 : The port led is not a port of the top module
+    Line 6, Column 4 : The port led is not a port of the top module
+    Line 7, Column 4 : The port led is not a port of the top module
+    Line 8, Column 4 : The port led is not a port of the top module
+    Line 9, Column 4 : The port led is not a port of the top module
+    Line 10, Column 4 : The port led is not a port of the top module
+    Line 11, Column 4 : The port led is not a port of the top module
+    Line 12, Column 4 : The port led is not a port of the top module
+Errors in file /home/cheze/Xilinx/alchitry-labs-1.2.7/library/components/io.acf:
+    Line 69, Column 4 : The port io_seg is not a port of the top module
+    Line 1, Column 4 : The port io_led is not a port of the top module
+    Line 2, Column 4 : The port io_led is not a port of the top module
+    Line 3, Column 4 : The port io_led is not a port of the top module
+    Line 4, Column 4 : The port io_led is not a port of the top module
+    Line 5, Column 4 : The port io_led is not a port of the top module
+    Line 6, Column 4 : The port io_led is not a port of the top module
+    Line 7, Column 4 : The port io_led is not a port of the top module
+    Line 8, Column 4 : The port io_led is not a port of the top module
+    Line 9, Column 4 : The port io_led is not a port of the top module
+    Line 10, Column 4 : The port io_led is not a port of the top module
+    Line 11, Column 4 : The port io_led is not a port of the top module
+    Line 12, Column 4 : The port io_led is not a port of the top module
+    Line 13, Column 4 : The port io_led is not a port of the top module
+    Line 14, Column 4 : The port io_led is not a port of the top module
+    Line 15, Column 4 : The port io_led is not a port of the top module
+    Line 16, Column 4 : The port io_led is not a port of the top module
+    Line 17, Column 4 : The port io_led is not a port of the top module
+    Line 18, Column 4 : The port io_led is not a port of the top module
+    Line 19, Column 4 : The port io_led is not a port of the top module
+    Line 20, Column 4 : The port io_led is not a port of the top module
+    Line 21, Column 4 : The port io_led is not a port of the top module
+    Line 22, Column 4 : The port io_led is not a port of the top module
+    Line 23, Column 4 : The port io_led is not a port of the top module
+    Line 24, Column 4 : The port io_led is not a port of the top module
+    Line 26, Column 4 : The port io_dip is not a port of the top module
+    Line 27, Column 4 : The port io_dip is not a port of the top module
+    Line 28, Column 4 : The port io_dip is not a port of the top module
+    Line 29, Column 4 : The port io_dip is not a port of the top module
+    Line 30, Column 4 : The port io_dip is not a port of the top module
+    Line 31, Column 4 : The port io_dip is not a port of the top module
+    Line 32, Column 4 : The port io_dip is not a port of the top module
+    Line 33, Column 4 : The port io_dip is not a port of the top module
+    Line 34, Column 4 : The port io_dip is not a port of the top module
+    Line 35, Column 4 : The port io_dip is not a port of the top module
+    Line 36, Column 4 : The port io_dip is not a port of the top module
+    Line 37, Column 4 : The port io_dip is not a port of the top module
+    Line 38, Column 4 : The port io_dip is not a port of the top module
+    Line 39, Column 4 : The port io_dip is not a port of the top module
+    Line 40, Column 4 : The port io_dip is not a port of the top module
+    Line 41, Column 4 : The port io_dip is not a port of the top module
+    Line 42, Column 4 : The port io_dip is not a port of the top module
+    Line 43, Column 4 : The port io_dip is not a port of the top module
+    Line 44, Column 4 : The port io_dip is not a port of the top module
+    Line 45, Column 4 : The port io_dip is not a port of the top module
+    Line 46, Column 4 : The port io_dip is not a port of the top module
+    Line 47, Column 4 : The port io_dip is not a port of the top module
+    Line 48, Column 4 : The port io_dip is not a port of the top module
+    Line 49, Column 4 : The port io_dip is not a port of the top module
+    Line 51, Column 4 : The port io_button is not a port of the top module
+    Line 52, Column 4 : The port io_button is not a port of the top module
+    Line 53, Column 4 : The port io_button is not a port of the top module
+    Line 54, Column 4 : The port io_button is not a port of the top module
+    Line 55, Column 4 : The port io_button is not a port of the top module
+    Line 57, Column 4 : The port io_sel is not a port of the top module
+    Line 58, Column 4 : The port io_sel is not a port of the top module
+    Line 59, Column 4 : The port io_sel is not a port of the top module
+    Line 60, Column 4 : The port io_sel is not a port of the top module
+    Line 62, Column 4 : The port io_seg is not a port of the top module
+    Line 63, Column 4 : The port io_seg is not a port of the top module
+    Line 64, Column 4 : The port io_seg is not a port of the top module
+    Line 65, Column 4 : The port io_seg is not a port of the top module
+    Line 66, Column 4 : The port io_seg is not a port of the top module
+    Line 67, Column 4 : The port io_seg is not a port of the top module
+    Line 68, Column 4 : The port io_seg is not a port of the top module

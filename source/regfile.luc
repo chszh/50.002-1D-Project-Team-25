@@ -1,0 +1,120 @@
+//the regfile for all game information
+module regfile (
+    input clk,  // clock
+    input rst,  // reset
+    input write_address[4], // write address
+    input we, // write enable
+    input data[16], // data in
+    
+    input read_address_a[4], //address port a 
+    input read_address_b[4], //address port b
+    output out_a[16], //read port a
+    output out_b[16], //read port b
+    
+    //debug
+    output p1_score_out[16],
+    output p2_score_out[16],
+    output p1_available_tiles_out[16],
+    output p2_available_tiles_out[16],
+    output p1_selected_tile_out[16],
+    output p2_selected_tile_out[16]
+
+  ) 
+
+// 0x1 = P1 Score
+// 0x2 = P2 Score
+// 0x3 = P1 Available Tiles
+// 0x4 = P2 Available Tiles
+// 0x5 = P1 Selected Tile
+// 0x6 = P2 Selected Tile
+// 0x7 = P1 Pressed
+// 0x8 = P2 Pressed
+// 0x9 = P1 Selected Tile Numerical Value
+// 0xA = P2 Selected Tile Numerical Value
+// 0xD = TMP REG
+// 0xE = TMP REG
+// 0xF = TMP REG
+
+
+{
+  .clk(clk){
+    .rst(rst){
+      dff p1_score[16];
+      dff p2_score[16];
+      dff p1_available_tiles[16];
+      dff p2_available_tiles[16];
+      dff p1_selected_tile[16];
+      dff p2_selected_tile[16];
+      dff p1_pressed[16];
+      dff p2_pressed[16];
+      dff p1_selected_tile_numerical_value[16];
+      dff p2_selected_tile_numerical_value[16];
+      dff tmp_a[16];
+      dff tmp_b[16];
+    }
+  }
+
+  always {
+  
+    //write port
+    if (we){
+      case(write_address){
+        4h1 : p1_score.d = data;
+        4h2 : p2_score.d = data;
+        4h3 : p1_available_tiles.d = data;
+        4h4 : p2_available_tiles.d = data;
+        4h5 : p1_selected_tile.d = data;
+        4h6 : p2_selected_tile.d = data;
+        4h7 : p1_pressed.d = data;
+        4h8 : p2_pressed.d = data;
+        4h9 : p1_selected_tile_numerical_value.d = data;
+        4hA : p2_selected_tile_numerical_value.d = data;
+        4hE : tmp_a.d = data;
+        4hF : tmp_b.d = data;
+      }
+    }
+    
+      
+    //read port a
+    case(read_address_a){
+        4h1 : out_a = p1_score.q;
+        4h2 : out_a = p2_score.q;
+        4h3 : out_a = p1_available_tiles.q;
+        4h4 : out_a = p2_available_tiles.q;
+        4h5 : out_a = p1_selected_tile.q;
+        4h6 : out_a = p2_selected_tile.q;
+        4h7 : out_a = p1_pressed.q;
+        4h8 : out_a = p2_pressed.q;
+        4h9 : out_a = p1_selected_tile_numerical_value.q;
+        4hA : out_a = p2_selected_tile_numerical_value.q;
+        4hE : out_a = tmp_a.q;
+        4hF : out_a = tmp_b.q;
+        default : out_a = 0;
+    }
+    
+    //read port b
+    case(read_address_b){
+        4h1 : out_b = p1_score.q;
+        4h2 : out_b = p2_score.q;
+        4h3 : out_b = p1_available_tiles.q;
+        4h4 : out_b = p2_available_tiles.q;
+        4h5 : out_b = p1_selected_tile.q;
+        4h6 : out_b = p2_selected_tile.q;
+        4h7 : out_b = p1_pressed.q;
+        4h8 : out_b = p2_pressed.q;
+        4h9 : out_b = p1_selected_tile_numerical_value.q;
+        4hA : out_b = p2_selected_tile_numerical_value.q;
+        4hE : out_b = tmp_a.q;
+        4hF : out_b = tmp_b.q;
+        default : out_b = 0;
+    }
+      
+    //For reading later
+    p1_score_out = p1_score.q;
+    p2_score_out = p2_score.q;
+    p1_available_tiles_out = p1_available_tiles.q;
+    p2_available_tiles_out = p2_available_tiles.q;
+    p1_selected_tile_out = p1_selected_tile.q;
+    p2_selected_tile_out = p2_selected_tile.q;
+  }
+}

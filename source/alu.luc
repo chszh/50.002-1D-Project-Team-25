@@ -1,0 +1,48 @@
+module alu(
+    input a[16],
+    input b[16],
+    input alufn_signal[6],
+    output out[16],
+    output zvn[3]
+){
+    adder m_adder;
+    boolean m_boolean;
+    compare m_compare;
+    shifter m_shifter;
+
+always{
+    m_adder.x = a;
+    m_adder.y = b;
+    m_adder.alufn_signal = alufn_signal;
+    zvn[2:0] = 3b0;
+    zvn[0] = m_adder.z;
+    zvn[1] = m_adder.v;
+    zvn[2] = m_adder.n;
+
+    m_boolean.a=a;
+    m_boolean.b=b;
+    m_boolean.alufn_signal=alufn_signal;
+
+    m_compare.z=m_adder.z;
+    m_compare.v=m_adder.v;
+    m_compare.n=m_adder.n;
+    m_compare.alufn_signal=alufn_signal;
+
+
+    m_shifter.a=a;
+    m_shifter.b=b[3:0];
+    m_shifter.alufn_signal=alufn_signal;
+
+
+    case(alufn_signal[5:4]){
+      b00 : out = m_adder.out;
+      b01 : out = m_boolean.result;
+      b10 : out = m_shifter.s;
+      b11 : out = m_compare.out;
+      default: out = 16b0;
+    }
+    if (alufn_signal == b000010){
+    out=a*b;
+    }
+}
+}

@@ -1,0 +1,61 @@
+module au_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    input usb_rx,           // USB->Serial input
+    output usb_tx,          // USB->Serial output
+
+    input custombuttons[4],
+    output io_seg [8],     
+    output io_sel [4]
+  ) {
+  
+  sig rst;                  // reset signa
+
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+    edge_detector edge_dt_btn_p1_add(#RISE(1), #FALL(0));
+    edge_detector edge_dt_btn_p1_sel(#RISE(1), #FALL(0));
+    edge_detector edge_dt_btn_p2_add(#RISE(1), #FALL(0));
+    edge_detector edge_dt_btn_p2_sel(#RISE(1), #FALL(0));
+    button_conditioner btn_cond_p1_add;
+    button_conditioner btn_cond_p1_sel;
+    button_conditioner btn_cond_p2_add;
+    button_conditioner btn_cond_p2_sel;
+    .rst(rst){
+      multi_dec_ctr my_multi_dec_ctr;
+      multi_seven_seg my_multi_seg;
+      datapath my_datapath;
+    }
+    
+  }
+  always{
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    usb_tx = usb_rx;
+
+    btn_cond_p1_add.in = custombuttons[0];
+    btn_cond_p1_sel.in = custombuttons[1];
+    btn_cond_p2_add.in = custombuttons[2];
+    btn_cond_p2_sel.in = custombuttons[3];
+    
+    edge_dt_btn_p1_add.in = btn_cond_p1_add.out;
+    edge_dt_btn_p1_sel.in = btn_cond_p1_sel.out;
+    edge_dt_btn_p2_add.in = btn_cond_p2_add.out;
+    edge_dt_btn_p2_sel.in = btn_cond_p2_sel.out;
+    
+    my_datapath.p1_add_button = edge_dt_btn_p1_add.out;
+    my_datapath.p1_sel_button = edge_dt_btn_p1_sel.out;
+    my_datapath.p2_add_button = edge_dt_btn_p2_add.out;
+    my_datapath.p2_sel_button = edge_dt_btn_p2_sel.out;
+
+    my_multi_dec_ctr.inc_p1 = my_datapath.p1_inc;
+    my_multi_dec_ctr.inc_p2 = my_datapath.p2_inc;
+    my_multi_seg.values = my_multi_dec_ctr.digits;
+    
+    io_seg = ~my_multi_seg.seg;
+    io_sel = ~my_multi_seg.sel;
+
+  }

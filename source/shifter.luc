@@ -1,0 +1,29 @@
+module shifter (
+    //16bits of input
+    input a[16],
+    
+    //low-order 4 bits for (2^4) bits shifter
+    input b[4], 
+    input alufn_signal[6],
+    
+    //corresponding number of output
+    output s[16]
+  ) {
+
+  always {
+  case (alufn_signal){
+    //if alufn_signal is (blue:), perform:
+    //No shift: return a unchanged
+    default: s = a;
+    
+    //SHL: shift left
+    b100000: s = a << b;
+    
+    //SHR: shift right
+    b100001: s = a >> b;
+      
+    //SHRs: shift right with sign extension
+    b100011: s = $signed(a) >>> b;
+    }
+  }
+}

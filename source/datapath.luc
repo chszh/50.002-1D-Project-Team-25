@@ -1,0 +1,87 @@
+//ALU + CU + REGFILE
+module datapath (
+    input clk,  // clock
+    input rst,  // reset
+    input p1_add_button,
+    input p1_sel_button,
+    input p2_add_button,
+    input p2_sel_button,
+    
+    //constant visual output
+    output p1_score_out[16],
+    output p2_score_out[16],
+    output p1_available_tiles_out[16],
+    output p2_available_tiles_out[16],
+    output p1_selected_tile_out[16],
+    output p2_selected_tile_out[16],
+    output p1_inc,
+    output p2_inc,
+    output segreset
+  ) 
+
+{
+  alu my_alu;
+  .clk(clk){
+    .rst(rst){
+      regfile my_regfile;
+      game_CU my_game_CU;
+    }
+  }
+
+  always {
+    
+    //constant visual output
+    p1_score_out = 0;
+    p2_score_out = 0;
+    p1_available_tiles_out = 0;
+    p2_available_tiles_out = 0;
+    p1_selected_tile_out = 0;
+    p2_selected_tile_out = 0;
+    
+    my_regfile.we = my_game_CU.we_regfile;
+    my_regfile.read_address_a = my_game_CU.regfile_read_address_a;
+    my_regfile.read_address_b = my_game_CU.regfile_read_address_b;
+    my_regfile.write_address = my_game_CU.regfile_write_address;
+
+    case(my_game_CU.asel){
+    b00 : my_alu.a = my_regfile.out_a;
+    b01 : my_alu.a = 16b1;
+    b10 : my_alu.a = 16b0;
+    b11 : my_alu.a = b0;
+    default : 
+      my_alu.a = 0;
+    }
+    case(my_game_CU.bsel){
+    b00 : my_alu.b = my_regfile.out_b;
+    b01 : my_alu.b = 16b1;
+    b10 : my_alu.b = 16b0;
+    b11 : my_alu.b = b0000000001000000;
+    default : 
+      my_alu.b = 0;
+    }
+    case(my_game_CU.wdsel){
+    b00 : my_regfile.data = my_alu.out;
+    b01 : my_regfile.data = 16b1;
+    b10 : my_regfile.data = 16b0;
+    b11 : my_regfile.data = b0000000001111111;
+    default : 
+      my_regfile.data = 0;
+    }
+    
+    my_alu.alufn_signal = my_game_CU.alufn;
+    my_game_CU.p1_add_button = p1_add_button;
+    my_game_CU.p1_sel_button = p1_sel_button;
+    my_game_CU.p2_add_button = p2_add_button;
+    my_game_CU.p2_sel_button = p2_sel_button;
+    my_game_CU.regfile_datain = my_regfile.out_b;
+    p1_score_out = my_regfile.p1_score_out;
+    p2_score_out = my_regfile.p2_score_out;
+    p1_available_tiles_out = my_regfile.p1_available_tiles_out;
+    p2_available_tiles_out = my_regfile.p2_available_tiles_out;
+    p1_selected_tile_out = my_regfile.p1_selected_tile_out;
+    p2_selected_tile_out = my_regfile.p2_selected_tile_out;
+    p1_inc = my_game_CU.p1_inc;
+    p2_inc = my_game_CU.p2_inc;
+    segreset = my_game_CU.segreset;
+  }
+}

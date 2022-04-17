@@ -1,0 +1,26 @@
+module compare (
+    input z,
+    input v,
+    input n,
+    input alufn_signal[6],
+    output out[16] 
+  ) {
+  
+  always {
+    out = 16b0;
+    // 3 functions of equal, less than as well as less than and equal to each take in z,v and n with XOR and AND gates to produce outputs
+    case (alufn_signal[2:1]) {
+
+      default: out[0] = 0;
+
+      //equals: lsb = z
+      b01: out[0] = z;
+
+      //less than: lsb = XOR(n,v)
+      b10: out[0] = n ^ v;
+
+      //less than and equals to: lsb = z AND XOR(n,v)
+      b11: out[0] = z | (n ^ v);
+    }
+  }
+}
