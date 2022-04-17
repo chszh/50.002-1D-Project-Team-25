@@ -21,7 +21,6 @@
     <component>pipeline.luc</component>
     <src>multi_dec_ctr.luc</src>
     <constraint lib="true">au.xdc</constraint>
-    <constraint lib="true">alchitry.acf</constraint>
-    <constraint lib="true">io.acf</constraint>
+    <constraint>custom.acf</constraint>
   </files>
 </project>
