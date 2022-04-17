@@ -1,0 +1,26 @@
+pin clk CLOCK;
+clock clk 100MHz;
+
+pin rst_n RESET;
+
+pin custombuttons[0] C46;
+pin custombuttons[1] C6;
+pin custombuttons[2] C28;
+pin custombuttons[3] C24;
+
+pin io_sel[0] C30;
+pin io_sel[1] C39;
+pin io_sel[2] C42;
+pin io_sel[3] C5;
+
+pin io_seg[0] C33;
+pin io_seg[1] C45;
+pin io_seg[2] C11;
+pin io_seg[3] C17;
+pin io_seg[4] C20;
+pin io_seg[5] C36;
+pin io_seg[6] C8;
+
+// flip the Tx/Rx lines
+pin usb_rx USB_TX;
+pin usb_tx USB_RX;
